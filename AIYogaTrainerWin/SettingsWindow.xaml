@@ -1,0 +1,319 @@
+<Window x:Class="AIYogaTrainerWin.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="AI Yoga Trainer Settings" Height="500" Width="650"
+        WindowStartupLocation="CenterOwner">
+    <Window.Background>
+        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#121212" Offset="0"/>
+            <GradientStop Color="#1E1E30" Offset="1"/>
+        </LinearGradientBrush>
+    </Window.Background>
+    
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <!-- Header -->
+        <TextBlock Grid.Row="0" 
+                   Text="SETTINGS" 
+                   HorizontalAlignment="Center" 
+                   FontSize="24" 
+                   FontWeight="Bold" 
+                   Margin="0,0,0,20" 
+                   Foreground="#00FFFF"/>
+        
+        <!-- Settings Form -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <!-- Model Path Section -->
+                <Border BorderThickness="1" 
+                        CornerRadius="10" 
+                        Padding="15" 
+                        Margin="0,0,0,20">
+                    <Border.BorderBrush>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                            <GradientStop Color="#00FFFF" Offset="0"/>
+                            <GradientStop Color="#FF00FF" Offset="1"/>
+                        </LinearGradientBrush>
+                    </Border.BorderBrush>
+                    
+                    <StackPanel>
+                        <TextBlock Text="Model Path" 
+                                   FontWeight="Bold" 
+                                   Foreground="#00FFFF" 
+                                   Margin="0,0,0,10"/>
+                        
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <TextBox x:Name="ModelPathTextBox" 
+                                     Grid.Column="0" 
+                                     Padding="5" 
+                                     Background="#333333" 
+                                     Foreground="White" 
+                                     BorderBrush="#555555"/>
+                            
+                            <Button x:Name="BrowseModelButton" 
+                                    Grid.Column="1" 
+                                    Content="Browse" 
+                                    Margin="10,0,0,0" 
+                                    Padding="10,5" 
+                                    Click="BrowseModelButton_Click">
+                                <Button.Style>
+                                    <Style TargetType="Button">
+                                        <Setter Property="Background" Value="#444444"/>
+                                        <Setter Property="Foreground" Value="White"/>
+                                        <Setter Property="BorderBrush" Value="#00FFFF"/>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </Grid>
+                        
+                        <TextBlock Text="Select a TensorFlow SavedModel (.pb) or ONNX (.onnx) file" 
+                                   Foreground="#AAAAAA" 
+                                   FontStyle="Italic" 
+                                   Margin="0,5,0,0" 
+                                   FontSize="11"/>
+                    </StackPanel>
+                </Border>
+                
+                <!-- Pose Names Section -->
+                <Border BorderThickness="1" 
+                        CornerRadius="10" 
+                        Padding="15" 
+                        Margin="0,0,0,20">
+                    <Border.BorderBrush>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                            <GradientStop Color="#00FFFF" Offset="0"/>
+                            <GradientStop Color="#FF00FF" Offset="1"/>
+                        </LinearGradientBrush>
+                    </Border.BorderBrush>
+                    
+                    <StackPanel>
+                        <TextBlock Text="Pose Names" 
+                                   FontWeight="Bold" 
+                                   Foreground="#00FFFF" 
+                                   Margin="0,0,0,10"/>
+                        
+                        <Grid Margin="0,5,0,5">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="100"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="Pose 1:" 
+                                       Grid.Column="0" 
+                                       VerticalAlignment="Center" 
+                                       Foreground="White"/>
+                            <TextBox x:Name="Pose1NameTextBox" 
+                                     Grid.Column="1" 
+                                     Padding="5" 
+                                     Background="#333333" 
+                                     Foreground="White" 
+                                     BorderBrush="#555555"/>
+                        </Grid>
+                        
+                        <Grid Margin="0,5,0,5">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="100"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="Pose 2:" 
+                                       Grid.Column="0" 
+                                       VerticalAlignment="Center" 
+                                       Foreground="White"/>
+                            <TextBox x:Name="Pose2NameTextBox" 
+                                     Grid.Column="1" 
+                                     Padding="5" 
+                                     Background="#333333" 
+                                     Foreground="White" 
+                                     BorderBrush="#555555"/>
+                        </Grid>
+                        
+                        <Grid Margin="0,5,0,5">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="100"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="Pose 3:" 
+                                       Grid.Column="0" 
+                                       VerticalAlignment="Center" 
+                                       Foreground="White"/>
+                            <TextBox x:Name="Pose3NameTextBox" 
+                                     Grid.Column="1" 
+                                     Padding="5" 
+                                     Background="#333333" 
+                                     Foreground="White" 
+                                     BorderBrush="#555555"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+                
+                <!-- Audio Section -->
+                <Border BorderThickness="1" 
+                        CornerRadius="10" 
+                        Padding="15">
+                    <Border.BorderBrush>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                            <GradientStop Color="#00FFFF" Offset="0"/>
+                            <GradientStop Color="#FF00FF" Offset="1"/>
+                        </LinearGradientBrush>
+                    </Border.BorderBrush>
+                    
+                    <StackPanel>
+                        <TextBlock Text="Audio Files" 
+                                   FontWeight="Bold" 
+                                   Foreground="#00FFFF" 
+                                   Margin="0,0,0,10"/>
+                        
+                        <Grid Margin="0,5,0,5">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="100"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="Pose 1 Audio:" 
+                                       Grid.Column="0" 
+                                       VerticalAlignment="Center" 
+                                       Foreground="White"/>
+                            <TextBox x:Name="Pose1AudioTextBox" 
+                                     Grid.Column="1" 
+                                     Padding="5" 
+                                     Background="#333333" 
+                                     Foreground="White" 
+                                     BorderBrush="#555555"/>
+                            <Button x:Name="BrowsePose1AudioButton" 
+                                    Grid.Column="2" 
+                                    Content="Browse" 
+                                    Margin="10,0,0,0" 
+                                    Padding="10,5" 
+                                    Click="BrowsePose1AudioButton_Click">
+                                <Button.Style>
+                                    <Style TargetType="Button">
+                                        <Setter Property="Background" Value="#444444"/>
+                                        <Setter Property="Foreground" Value="White"/>
+                                        <Setter Property="BorderBrush" Value="#00FFFF"/>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </Grid>
+                        
+                        <Grid Margin="0,5,0,5">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="100"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="Pose 2 Audio:" 
+                                       Grid.Column="0" 
+                                       VerticalAlignment="Center" 
+                                       Foreground="White"/>
+                            <TextBox x:Name="Pose2AudioTextBox" 
+                                     Grid.Column="1" 
+                                     Padding="5" 
+                                     Background="#333333" 
+                                     Foreground="White" 
+                                     BorderBrush="#555555"/>
+                            <Button x:Name="BrowsePose2AudioButton" 
+                                    Grid.Column="2" 
+                                    Content="Browse" 
+                                    Margin="10,0,0,0" 
+                                    Padding="10,5" 
+                                    Click="BrowsePose2AudioButton_Click">
+                                <Button.Style>
+                                    <Style TargetType="Button">
+                                        <Setter Property="Background" Value="#444444"/>
+                                        <Setter Property="Foreground" Value="White"/>
+                                        <Setter Property="BorderBrush" Value="#00FFFF"/>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </Grid>
+                        
+                        <Grid Margin="0,5,0,5">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="100"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="Pose 3 Audio:" 
+                                       Grid.Column="0" 
+                                       VerticalAlignment="Center" 
+                                       Foreground="White"/>
+                            <TextBox x:Name="Pose3AudioTextBox" 
+                                     Grid.Column="1" 
+                                     Padding="5" 
+                                     Background="#333333" 
+                                     Foreground="White" 
+                                     BorderBrush="#555555"/>
+                            <Button x:Name="BrowsePose3AudioButton" 
+                                    Grid.Column="2" 
+                                    Content="Browse" 
+                                    Margin="10,0,0,0" 
+                                    Padding="10,5" 
+                                    Click="BrowsePose3AudioButton_Click">
+                                <Button.Style>
+                                    <Style TargetType="Button">
+                                        <Setter Property="Background" Value="#444444"/>
+                                        <Setter Property="Foreground" Value="White"/>
+                                        <Setter Property="BorderBrush" Value="#00FFFF"/>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+        
+        <!-- Action Buttons -->
+        <StackPanel Grid.Row="2" 
+                    Orientation="Horizontal" 
+                    HorizontalAlignment="Right" 
+                    Margin="0,20,0,0">
+            <Button x:Name="SaveButton" 
+                    Content="Save" 
+                    Width="100" 
+                    Height="35" 
+                    Margin="10,0" 
+                    Click="SaveButton_Click">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Setter Property="Background">
+                            <Setter.Value>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                    <GradientStop Color="#001F3F" Offset="0"/>
+                                    <GradientStop Color="#003366" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Setter.Value>
+                        </Setter>
+                        <Setter Property="Foreground" Value="#00FFFF"/>
+                        <Setter Property="BorderBrush" Value="#00FFFF"/>
+                        <Setter Property="BorderThickness" Value="1"/>
+                    </Style>
+                </Button.Style>
+            </Button>
+            
+            <Button x:Name="CancelButton" 
+                    Content="Cancel" 
+                    Width="100" 
+                    Height="35" 
+                    Click="CancelButton_Click">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Setter Property="Background" Value="#333333"/>
+                        <Setter Property="Foreground" Value="White"/>
+                        <Setter Property="BorderBrush" Value="#555555"/>
+                        <Setter Property="BorderThickness" Value="1"/>
+                    </Style>
+                </Button.Style>
+            </Button>
+        </StackPanel>
+    </Grid>
+</Window>

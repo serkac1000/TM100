@@ -1,0 +1,52 @@
+modules = ["dotnet"]
+
+[nix]
+channel = "stable-24_05"
+
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "AIYogaTrainerWin"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "winapp"
+
+[[workflows.workflow]]
+name = "AIYogaTrainerWin"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "packager.installForAll"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "dotnet run --project AIYogaTrainerWin"
+waitForPort = 5000
+
+[[workflows.workflow]]
+name = "winapp"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "packager.installForAll"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd AIYogaTrainerWin && dotnet run"
+
+[deployment]
+run = ["sh", "-c", "dotnet run --project AIYogaTrainerWin"]

@@ -1,12 +1,12 @@
 using System;
-using System.Drawing;
-using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Threading;
+using System.Windows.Shapes;
+using System.IO;
+using OpenCvSharp;
+using System.Text.Json;
 
 namespace AIYogaTrainerWin
 {
@@ -15,479 +15,300 @@ namespace AIYogaTrainerWin
     /// </summary>
     public partial class MainWindow : Window
     {
-        private SkeletonDetector skeletonDetector;
-        private PoseRecognizer poseRecognizer;
+        private PoseDetector poseDetector;
+        private SkeletonVisualizer skeletonVisualizer;
         private AudioManager audioManager;
-        
+        private Settings settings;
+        private CancellationTokenSource cancellationTokenSource;
         private bool isRunning = false;
-        
-        // Border brushes for active and inactive poses
-        private readonly SolidColorBrush activePoseBrush = new SolidColorBrush(Colors.Cyan);
-        private readonly SolidColorBrush inactivePoseBrush = new SolidColorBrush(Colors.Gray);
-        
+        private string currentPose = "Pose1";
+        private float[] currentConfidence = new float[3] { 0, 0, 0 };
+
         public MainWindow()
         {
             InitializeComponent();
             
             // Initialize components
-            InitializeComponents();
+            LoadSettings();
+            skeletonVisualizer = new SkeletonVisualizer(SkeletonCanvas);
+            audioManager = new AudioManager();
             
-            // Load pose images if available
-            LoadPoseImages();
-            
-            // Add log message
-            AddLogMessage("Application initialized.");
-            
-            // Update status displays
-            UpdateStatusDisplays();
+            // Initialize UI
+            UpdateUI();
         }
 
-        /// <summary>
-        /// Initialize application components
-        /// </summary>
-        private void InitializeComponents()
+        private void LoadSettings()
         {
             try
             {
-                // Create skeleton detector
-                skeletonDetector = new SkeletonDetector(AppSettings.Settings.CameraIndex);
-                skeletonDetector.NewFrame += SkeletonDetector_NewFrame;
-                skeletonDetector.KeypointsDetected += SkeletonDetector_KeypointsDetected;
-                
-                // Create pose recognizer
-                poseRecognizer = new PoseRecognizer();
-                poseRecognizer.ConfidenceThreshold = AppSettings.Settings.ConfidenceThreshold;
-                poseRecognizer.PoseRecognized += PoseRecognizer_PoseRecognized;
-                
-                // Create audio manager
-                audioManager = new AudioManager();
-                
-                // Try to load model if path is specified
-                if (!string.IsNullOrEmpty(AppSettings.Settings.ModelUrl))
+                string settingsFile = "settings.json";
+                if (File.Exists(settingsFile))
                 {
-                    LoadModel(AppSettings.Settings.ModelUrl);
-                }
-                
-                // Set initial border colors
-                Pose1Border.BorderBrush = inactivePoseBrush;
-                Pose2Border.BorderBrush = inactivePoseBrush;
-                Pose3Border.BorderBrush = inactivePoseBrush;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error initializing components: {ex.Message}", "Error", 
-                    MessageBoxButton.OK, MessageBoxImage.Error);
-                AddLogMessage($"Error: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Load pose reference images from settings
-        /// </summary>
-        private void LoadPoseImages()
-        {
-            try
-            {
-                // Load pose 1 image
-                if (File.Exists(AppSettings.Settings.Pose1ImagePath))
-                {
-                    Pose1Image.Source = new BitmapImage(new Uri(AppSettings.Settings.Pose1ImagePath));
-                }
-                
-                // Load pose 2 image
-                if (File.Exists(AppSettings.Settings.Pose2ImagePath))
-                {
-                    Pose2Image.Source = new BitmapImage(new Uri(AppSettings.Settings.Pose2ImagePath));
-                }
-                
-                // Load pose 3 image
-                if (File.Exists(AppSettings.Settings.Pose3ImagePath))
-                {
-                    Pose3Image.Source = new BitmapImage(new Uri(AppSettings.Settings.Pose3ImagePath));
-                }
-            }
-            catch (Exception ex)
-            {
-                AddLogMessage($"Error loading pose images: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Load AI model from specified path
-        /// </summary>
-        /// <param name="modelPath">Path to the TensorFlow model</param>
-        private void LoadModel(string modelPath)
-        {
-            try
-            {
-                if (string.IsNullOrEmpty(modelPath) || !File.Exists(modelPath))
-                {
-                    AddLogMessage("Model file not found: " + modelPath);
-                    ModelStatusText.Text = "Model: Not Found";
-                    return;
-                }
-                
-                bool success = poseRecognizer.LoadModel(modelPath);
-                
-                if (success)
-                {
-                    AddLogMessage("Model loaded successfully: " + Path.GetFileName(modelPath));
-                    ModelStatusText.Text = "Model: Loaded";
+                    string json = File.ReadAllText(settingsFile);
+                    settings = JsonSerializer.Deserialize<Settings>(json);
                 }
                 else
                 {
-                    AddLogMessage("Failed to load model: " + Path.GetFileName(modelPath));
-                    ModelStatusText.Text = "Model: Load Failed";
+                    // Create default settings
+                    settings = new Settings
+                    {
+                        ModelPath = "",
+                        Pose1Name = "Pose 1",
+                        Pose2Name = "Pose 2",
+                        Pose3Name = "Pose 3"
+                    };
+                    SaveSettings();
                 }
             }
             catch (Exception ex)
             {
-                AddLogMessage($"Error loading model: {ex.Message}");
-                ModelStatusText.Text = "Model: Error";
+                MessageBox.Show($"Error loading settings: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                settings = new Settings
+                {
+                    ModelPath = "",
+                    Pose1Name = "Pose 1",
+                    Pose2Name = "Pose 2",
+                    Pose3Name = "Pose 3"
+                };
             }
         }
 
-        /// <summary>
-        /// Start button click handler
-        /// </summary>
-        private void StartButton_Click(object sender, RoutedEventArgs e)
+        private void SaveSettings()
         {
-            StartYogaTrainer();
+            try
+            {
+                string json = JsonSerializer.Serialize(settings, new JsonSerializerOptions { WriteIndented = true });
+                File.WriteAllText("settings.json", json);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error saving settings: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
-        /// <summary>
-        /// Stop button click handler
-        /// </summary>
+        private async void StartButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrEmpty(settings.ModelPath))
+            {
+                MessageBox.Show("Please configure model path in settings first.", "Settings Required", MessageBoxButton.OK, MessageBoxImage.Information);
+                SettingsButton_Click(sender, e);
+                return;
+            }
+
+            try
+            {
+                StartSession();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error starting session: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                StopSession();
+            }
+        }
+
         private void StopButton_Click(object sender, RoutedEventArgs e)
         {
-            StopYogaTrainer();
+            StopSession();
         }
 
-        /// <summary>
-        /// Settings button click handler
-        /// </summary>
         private void SettingsButton_Click(object sender, RoutedEventArgs e)
         {
-            // Create and show settings window
-            SettingsWindow settingsWindow = new SettingsWindow();
-            
-            // If settings are changed and saved, reload them
+            // Stop the session if running
+            if (isRunning)
+            {
+                StopSession();
+            }
+
+            // Open settings window
+            SettingsWindow settingsWindow = new SettingsWindow(settings);
             if (settingsWindow.ShowDialog() == true)
             {
-                // Apply new settings
-                poseRecognizer.ConfidenceThreshold = AppSettings.Settings.ConfidenceThreshold;
-                
-                // Reload model if changed
-                if (!string.IsNullOrEmpty(AppSettings.Settings.ModelUrl) && 
-                    File.Exists(AppSettings.Settings.ModelUrl))
-                {
-                    LoadModel(AppSettings.Settings.ModelUrl);
-                }
-                
-                // Reload pose images
-                LoadPoseImages();
-                
-                AddLogMessage("Settings updated.");
+                settings = settingsWindow.Settings;
+                SaveSettings();
             }
         }
 
-        /// <summary>
-        /// Start the yoga trainer
-        /// </summary>
-        private void StartYogaTrainer()
+        private void StartSession()
         {
             if (isRunning)
                 return;
-            
+
             try
             {
-                // Check if model is loaded
-                if (!File.Exists(AppSettings.Settings.ModelUrl))
-                {
-                    MessageBox.Show("Please load a TensorFlow model in settings first.", 
-                        "Model Not Found", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    AddLogMessage("Cannot start: Model not found.");
-                    return;
-                }
+                StatusText.Text = "Initializing...";
                 
-                // Start the camera
-                bool cameraStarted = skeletonDetector.Start();
+                // Initialize pose detector
+                poseDetector = new PoseDetector(settings.ModelPath);
                 
-                if (!cameraStarted)
-                {
-                    MessageBox.Show("Could not start camera. Please check your webcam connection.", 
-                        "Camera Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    AddLogMessage("Failed to start camera.");
-                    return;
-                }
+                // Start webcam capture
+                cancellationTokenSource = new CancellationTokenSource();
+                Task.Run(() => ProcessFrames(cancellationTokenSource.Token));
                 
+                // Update UI
                 isRunning = true;
                 StartButton.IsEnabled = false;
                 StopButton.IsEnabled = true;
-                CameraStatusText.Text = "Camera: Running";
+                SettingsButton.IsEnabled = false;
                 
-                AddLogMessage("Yoga trainer started. Strike a pose!");
+                StatusText.Text = "Running";
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error starting yoga trainer: {ex.Message}", 
-                    "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                AddLogMessage($"Error: {ex.Message}");
+                MessageBox.Show($"Failed to start session: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                StopSession();
             }
         }
 
-        /// <summary>
-        /// Stop the yoga trainer
-        /// </summary>
-        private void StopYogaTrainer()
+        private void StopSession()
         {
             if (!isRunning)
                 return;
+
+            // Cancel processing
+            cancellationTokenSource?.Cancel();
             
+            // Clean up resources
+            poseDetector?.Dispose();
+            poseDetector = null;
+            
+            // Update UI
+            isRunning = false;
+            StartButton.IsEnabled = true;
+            StopButton.IsEnabled = false;
+            SettingsButton.IsEnabled = true;
+            
+            StatusText.Text = "Ready";
+            
+            // Clear webcam feed and skeleton
+            WebcamFeed.Source = null;
+            SkeletonCanvas.Children.Clear();
+        }
+
+        private async Task ProcessFrames(CancellationToken cancellationToken)
+        {
             try
             {
-                // Stop the camera
-                skeletonDetector.Stop();
-                
-                // Reset UI
-                WebcamFeed.Source = null;
-                SkeletonCanvas.Children.Clear();
-                CurrentPoseText.Text = "Not Detected";
-                ConfidenceText.Text = "Confidence: 0%";
-                
-                // Reset pose highlight
-                Pose1Border.BorderBrush = inactivePoseBrush;
-                Pose2Border.BorderBrush = inactivePoseBrush;
-                Pose3Border.BorderBrush = inactivePoseBrush;
-                
-                isRunning = false;
-                StartButton.IsEnabled = true;
-                StopButton.IsEnabled = false;
-                CameraStatusText.Text = "Camera: Stopped";
-                
-                AddLogMessage("Yoga trainer stopped.");
+                using (VideoCapture capture = new VideoCapture(0))
+                {
+                    if (!capture.IsOpened())
+                    {
+                        Dispatcher.Invoke(() => 
+                        {
+                            MessageBox.Show("Failed to open webcam. Please check your connections.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                            StopSession();
+                        });
+                        return;
+                    }
+
+                    while (!cancellationToken.IsCancellationRequested)
+                    {
+                        // Capture frame
+                        using (Mat frame = new Mat())
+                        {
+                            capture.Read(frame);
+                            if (frame.Empty())
+                                continue;
+
+                            // Detect pose keypoints
+                            var keypoints = poseDetector.DetectSkeleton(frame);
+                            
+                            // Run inference with detected keypoints
+                            if (keypoints != null && keypoints.Length > 0)
+                            {
+                                currentConfidence = poseDetector.RunModel(keypoints);
+                                CheckPoseTransition(currentConfidence);
+                            }
+
+                            // Update UI on UI thread
+                            Dispatcher.Invoke(() => 
+                            {
+                                // Convert OpenCV Mat to WPF image
+                                WebcamFeed.Source = OpenCvSharp.WpfExtensions.BitmapSourceConverter.ToBitmapSource(frame);
+                                
+                                // Update skeleton visualization
+                                if (keypoints != null && keypoints.Length > 0)
+                                {
+                                    skeletonVisualizer.DrawSkeleton(keypoints);
+                                }
+                                
+                                // Update confidence values
+                                UpdateConfidenceValues(currentConfidence);
+                            });
+                        }
+
+                        // Add a small delay to reduce CPU usage
+                        await Task.Delay(30, cancellationToken);
+                    }
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                // Normal cancellation, ignore
             }
             catch (Exception ex)
             {
-                AddLogMessage($"Error stopping: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Event handler for new frames from the skeleton detector
-        /// </summary>
-        private void SkeletonDetector_NewFrame(object sender, FrameEventArgs e)
-        {
-            if (e.Frame == null)
-                return;
-            
-            // Update UI on the UI thread
-            Dispatcher.Invoke(() =>
-            {
-                try
+                Dispatcher.Invoke(() => 
                 {
-                    // Convert Bitmap to BitmapSource for display
-                    WebcamFeed.Source = BitmapToImageSource(e.Frame);
-                    
-                    // Draw skeleton on canvas
-                    skeletonDetector.DrawSkeleton(SkeletonCanvas, e.Frame.Width, e.Frame.Height);
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Error updating frame: {ex.Message}");
-                }
-            });
-        }
-
-        /// <summary>
-        /// Event handler for keypoints detected by the skeleton detector
-        /// </summary>
-        private void SkeletonDetector_KeypointsDetected(object sender, KeypointsEventArgs e)
-        {
-            if (e.Keypoints == null || e.Keypoints.Length == 0)
-                return;
-            
-            try
-            {
-                // Process keypoints with the pose recognizer
-                var confidenceScores = poseRecognizer.RunModel(e.Keypoints);
-                
-                // Update UI on the UI thread
-                Dispatcher.Invoke(() =>
-                {
-                    // Find max confidence for display
-                    float maxConfidence = 0;
-                    for (int i = 0; i < confidenceScores.Length; i++)
-                    {
-                        if (confidenceScores[i] > maxConfidence)
-                        {
-                            maxConfidence = confidenceScores[i];
-                        }
-                    }
-                    
-                    // Update confidence display
-                    ConfidenceText.Text = $"Confidence: {maxConfidence:P0}";
+                    MessageBox.Show($"Error processing frames: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    StopSession();
                 });
             }
-            catch (Exception ex)
+        }
+
+        private void CheckPoseTransition(float[] confidence)
+        {
+            // Check for pose transitions based on confidence thresholds (50%)
+            if (confidence[0] > 0.5 && currentPose != "Pose1")
             {
-                System.Diagnostics.Debug.WriteLine($"Error processing keypoints: {ex.Message}");
+                currentPose = "Pose1";
+                Dispatcher.Invoke(() => CurrentPoseText.Text = settings.Pose1Name);
+                audioManager.PlayAudio("pose1.wav");
             }
-        }
-
-        /// <summary>
-        /// Event handler for pose recognition events
-        /// </summary>
-        private void PoseRecognizer_PoseRecognized(object sender, PoseRecognizedEventArgs e)
-        {
-            // Update UI on the UI thread
-            Dispatcher.Invoke(() =>
+            else if (confidence[1] > 0.5 && currentPose == "Pose1")
             {
-                try
-                {
-                    // Update current pose text
-                    CurrentPoseText.Text = e.PoseName;
-                    ConfidenceText.Text = $"Confidence: {e.Confidence:P0}";
-                    
-                    // Update pose highlight
-                    Pose1Border.BorderBrush = (e.PoseName == "Pose1") ? activePoseBrush : inactivePoseBrush;
-                    Pose2Border.BorderBrush = (e.PoseName == "Pose2") ? activePoseBrush : inactivePoseBrush;
-                    Pose3Border.BorderBrush = (e.PoseName == "Pose3") ? activePoseBrush : inactivePoseBrush;
-                    
-                    // Add to log
-                    AddLogMessage($"Detected {e.PoseName} with {e.Confidence:P0} confidence.");
-                    
-                    // Play corresponding audio
-                    PlayPoseAudio(e.PoseName);
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Error handling pose recognition: {ex.Message}");
-                }
-            });
-        }
-
-        /// <summary>
-        /// Play audio for recognized pose
-        /// </summary>
-        /// <param name="poseName">Name of the recognized pose</param>
-        private void PlayPoseAudio(string poseName)
-        {
-            try
+                currentPose = "Pose2";
+                Dispatcher.Invoke(() => CurrentPoseText.Text = settings.Pose2Name);
+                audioManager.PlayAudio("pose2.wav");
+            }
+            else if (confidence[2] > 0.5 && currentPose == "Pose2")
             {
-                string audioPath = "";
+                currentPose = "Pose3";
+                Dispatcher.Invoke(() => CurrentPoseText.Text = settings.Pose3Name);
+                audioManager.PlayAudio("pose3.wav");
                 
-                // Determine which audio file to play
-                switch (poseName)
-                {
-                    case "Pose1":
-                        audioPath = AppSettings.Settings.Pose1AudioPath;
-                        break;
-                    case "Pose2":
-                        audioPath = AppSettings.Settings.Pose2AudioPath;
-                        break;
-                    case "Pose3":
-                        audioPath = AppSettings.Settings.Pose3AudioPath;
-                        break;
-                }
-                
-                // Play audio if file exists
-                if (!string.IsNullOrEmpty(audioPath) && File.Exists(audioPath))
-                {
-                    audioManager.PlayAudio(audioPath);
-                }
-            }
-            catch (Exception ex)
-            {
-                AddLogMessage($"Error playing audio: {ex.Message}");
+                // Loop back to Pose1
+                currentPose = "Pose1";
+                Dispatcher.Invoke(() => CurrentPoseText.Text = settings.Pose1Name);
             }
         }
 
-        /// <summary>
-        /// Add message to status log
-        /// </summary>
-        /// <param name="message">Message to add</param>
-        private void AddLogMessage(string message)
+        private void UpdateConfidenceValues(float[] confidence)
         {
-            Dispatcher.Invoke(() =>
-            {
-                // Format with timestamp
-                string formattedMessage = $"[{DateTime.Now:HH:mm:ss}] {message}";
-                
-                // Add to log with newline
-                StatusLog.Text += (StatusLog.Text.Length > 0 ? Environment.NewLine : "") + formattedMessage;
-                
-                // Scroll to bottom
-                ScrollToBottom();
-            });
+            // Update the accuracy percentages on the UI
+            Pose1Accuracy.Text = $"{confidence[0] * 100:F1}%";
+            Pose2Accuracy.Text = $"{confidence[1] * 100:F1}%";
+            Pose3Accuracy.Text = $"{confidence[2] * 100:F1}%";
+
+            // Update progress bar based on current pose confidence
+            if (currentPose == "Pose1")
+                PoseProgressBar.Value = confidence[0] * 100;
+            else if (currentPose == "Pose2")
+                PoseProgressBar.Value = confidence[1] * 100;
+            else if (currentPose == "Pose3")
+                PoseProgressBar.Value = confidence[2] * 100;
         }
 
-        /// <summary>
-        /// Scroll status log to bottom
-        /// </summary>
-        private void ScrollToBottom()
+        private void UpdateUI()
         {
-            var parent = StatusLog.Parent as ScrollViewer;
-            if (parent != null)
-            {
-                parent.ScrollToBottom();
-            }
+            // Update UI with current settings
+            CurrentPoseText.Text = settings.Pose1Name;
         }
 
-        /// <summary>
-        /// Convert Bitmap to BitmapSource for display in WPF Image control
-        /// </summary>
-        /// <param name="bitmap">Bitmap to convert</param>
-        /// <returns>BitmapSource for WPF</returns>
-        private BitmapSource BitmapToImageSource(Bitmap bitmap)
+        protected override void OnClosed(EventArgs e)
         {
-            using (var memory = new MemoryStream())
-            {
-                bitmap.Save(memory, System.Drawing.Imaging.ImageFormat.Bmp);
-                memory.Position = 0;
-                
-                var bitmapImage = new BitmapImage();
-                bitmapImage.BeginInit();
-                bitmapImage.StreamSource = memory;
-                bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-                bitmapImage.EndInit();
-                bitmapImage.Freeze(); // Important for cross-thread access
-                
-                return bitmapImage;
-            }
-        }
-
-        /// <summary>
-        /// Update all status displays
-        /// </summary>
-        private void UpdateStatusDisplays()
-        {
-            // Update camera status text
-            CameraStatusText.Text = isRunning ? "Camera: Running" : "Camera: Not Started";
-            
-            // Update model status text
-            if (!string.IsNullOrEmpty(AppSettings.Settings.ModelUrl) && 
-                File.Exists(AppSettings.Settings.ModelUrl))
-            {
-                ModelStatusText.Text = "Model: Loaded";
-            }
-            else
-            {
-                ModelStatusText.Text = "Model: Not Loaded";
-            }
-        }
-
-        /// <summary>
-        /// Window closing event handler
-        /// </summary>
-        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
-        {
-            // Clean up resources
-            StopYogaTrainer();
-            
-            skeletonDetector?.Dispose();
-            poseRecognizer?.Dispose();
-            audioManager?.Dispose();
+            // Clean up resources when window is closed
+            StopSession();
+            base.OnClosed(e);
         }
     }
 }
