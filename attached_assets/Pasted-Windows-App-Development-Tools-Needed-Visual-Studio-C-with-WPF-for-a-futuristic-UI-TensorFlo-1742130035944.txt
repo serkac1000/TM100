@@ -1,0 +1,153 @@
+Windows App Development
+Tools Needed:
+
+Visual Studio (C# with WPF for a futuristic UI)
+TensorFlow.NET or ONNX Runtime (to load and run Teachable Machine model)
+OpenCVSharp (for webcam input and skeleton detection)
+NAudio (for audio playback)
+Step 1: Set Up the Project
+Open Visual Studio and create a new WPF App (.NET Framework) project named AIYogaTrainerWin.
+Install required NuGet packages:
+ 
+
+ 
+Install-Package OpenCvSharp4.Windows
+Install-Package TensorFlow.NET
+Install-Package NAudio
+Design a futuristic UI using XAML (e.g., gradients, neon effects, and rounded buttons).
+Step 2: Design the UI
+Start Page:
+Add a Button labeled "Start" with an image of Pose 1 (use a futuristic neon border).
+Add a MediaElement or Image control for webcam feed.
+Add a skeleton overlay (Canvas with lines connecting key points).
+Settings Page:
+TextBox for entering the Teachable Machine model URL (e.g., .tflite or exported .pb file).
+Three Image controls for uploading Pose 1, Pose 2, and Pose 3 reference images.
+Save button to store settings in a local JSON file.
+Example XAML for Start Page:
+
+ 
+
+ 
+<Window x:Class="AIYogaTrainerWin.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        Title="AI Yoga Trainer" Height="600" Width="800">
+    <Grid Background="Black">
+        <Image x:Name="WebcamFeed" Stretch="Uniform"/>
+        <Canvas x:Name="SkeletonCanvas"/>
+        <Button x:Name="StartButton" Content="Start" Width="100" Height="50" 
+                Background="LinearGradientBrush" Click="StartButton_Click">
+            <Button.Content>
+                <Image Source="pose1_reference.jpg"/>
+            </Button.Content>
+        </Button>
+        <Button x:Name="SettingsButton" Content="Settings" Click="SettingsButton_Click"/>
+    </Grid>
+</Window>
+Step 3: Load and Run the Teachable Machine Model
+Export your Teachable Machine pose model as a TensorFlow SavedModel or ONNX format.
+Load the model in C#:
+ 
+using Tensorflow;
+using OpenCvSharp;
+
+public partial class MainWindow : Window
+{
+    private Graph graph;
+    private Session session;
+    private VideoCapture capture;
+
+    public MainWindow()
+    {
+        InitializeComponent();
+        LoadModel("path_to_model");
+        StartWebcam();
+    }
+
+    private void LoadModel(string modelPath)
+    {
+        graph = new Graph().Import(modelPath);
+        session = new Session(graph);
+    }
+}
+Process webcam input with OpenCVSharp to detect skeleton coordinates (Teachable Machine uses 18 keypoints):
+ 
+
+ 
+
+ 
+private void StartWebcam()
+{
+    capture = new VideoCapture(0);
+    Task.Run(() => ProcessFrames());
+}
+
+private void ProcessFrames()
+{
+    while (true)
+    {
+        Mat frame = new Mat();
+        capture.Read(frame);
+        var keypoints = DetectSkeleton(frame); // Custom method using OpenCV
+        var confidence = RunModel(keypoints);
+        UpdateUI(frame, keypoints, confidence);
+    }
+}
+Step 4: Pose Recognition Logic
+Implement a method to compare current keypoints with the model:
+ 
+
+ 
+private float[] RunModel(float[] keypoints)
+{
+    var tensor = new TFTensor(keypoints);
+    var runner = session.GetRunner();
+    runner.AddInput("input", tensor).Fetch("output");
+    var output = runner.Run();
+    return output[0].GetValue() as float[]; // Confidence scores for Pose 1, 2, 3
+}
+Add threshold logic (50%):
+ 
+
+ 
+private string currentPose = "Pose1";
+private void CheckPoseTransition(float[] confidence)
+{
+    if (confidence[0] > 0.5 && currentPose != "Pose1")
+    {
+        currentPose = "Pose1";
+        PlayAudio("pose1.wav");
+    }
+    else if (confidence[1] > 0.5 && currentPose == "Pose1")
+    {
+        currentPose = "Pose2";
+        PlayAudio("pose2.wav");
+    }
+    else if (confidence[2] > 0.5 && currentPose == "Pose2")
+    {
+        currentPose = "Pose3";
+        PlayAudio("pose3.wav");
+        currentPose = "Pose1"; // Loop back
+    }
+}
+Step 5: Audio Playback
+Use NAudio to play audio cues:
+ 
+
+ 
+
+ 
+using NAudio.Wave;
+
+private void PlayAudio(string filePath)
+{
+    using (var audioFile = new AudioFileReader(filePath))
+    using (var outputDevice = new WaveOutEvent())
+    {
+        outputDevice.Init(audioFile);
+        outputDevice.Play();
+    }
+}
+Step 6: Finalize
+Save settings (model URL and images) to a JSON file using System.Text.Json.
+Add futuristic animations (e.g., glow effects) using WPF animations.
