@@ -1,45 +1,56 @@
 using System;
+using System.Collections.Generic;
 
 namespace AIYogaTrainerWin
 {
     /// <summary>
     /// Class to store application settings
     /// </summary>
-    public class Settings
+    public class YogaAppSettings
     {
         /// <summary>
-        /// Path to the TensorFlow/ONNX model file
+        /// URL to the model API
         /// </summary>
-        public string ModelPath { get; set; }
-
+        public string ModelUrl { get; set; } = "";
+        
         /// <summary>
-        /// Name for Pose 1
+        /// Whether audio feedback is enabled
         /// </summary>
-        public string Pose1Name { get; set; }
-
+        public bool AudioFeedback { get; set; } = true;
+        
         /// <summary>
-        /// Name for Pose 2
+        /// Hold time in seconds
         /// </summary>
-        public string Pose2Name { get; set; }
-
+        public int HoldTime { get; set; } = 3;
+        
         /// <summary>
-        /// Name for Pose 3
+        /// Selected Pose IDs for the training session
         /// </summary>
-        public string Pose3Name { get; set; }
-
+        public List<string> SelectedPoseIds { get; set; } = new List<string>();
+        
         /// <summary>
-        /// Path to audio file for Pose 1
+        /// Maximum difficulty level to include in training
         /// </summary>
-        public string Pose1AudioPath { get; set; }
-
+        public int MaxDifficultyLevel { get; set; } = 3;
+        
         /// <summary>
-        /// Path to audio file for Pose 2
+        /// Number of poses per training session
         /// </summary>
-        public string Pose2AudioPath { get; set; }
-
+        public int PosesPerSession { get; set; } = 5;
+        
+        // For backward compatibility - kept as settable properties
+        public string Pose1Name { get; set; } = "Mountain Pose";
+        public string Pose2Name { get; set; } = "Warrior Pose";
+        public string Pose3Name { get; set; } = "Tree Pose";
+        public string Pose4Name { get; set; } = "Downward Dog";
+        
         /// <summary>
-        /// Path to audio file for Pose 3
+        /// Constructor to initialize default settings
         /// </summary>
-        public string Pose3AudioPath { get; set; }
+        public YogaAppSettings()
+        {
+            // Set default selected poses
+            SelectedPoseIds = new List<string> { "mountain", "warrior1", "tree", "downdog", "triangle" };
+        }
     }
 }

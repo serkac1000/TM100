@@ -1,4 +1,4 @@
-modules = ["dotnet"]
+modules = ["dotnet", "dotnet-8.0"]
 
 [nix]
 channel = "stable-24_05"
@@ -13,29 +13,10 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "AIYogaTrainerWin"
-
-[[workflows.workflow.tasks]]
-task = "workflow.run"
-args = "winapp"
+args = "YogaTrainer"
 
 [[workflows.workflow]]
-name = "AIYogaTrainerWin"
-author = "agent"
-
-[workflows.workflow.metadata]
-agentRequireRestartOnSave = false
-
-[[workflows.workflow.tasks]]
-task = "packager.installForAll"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "dotnet run --project AIYogaTrainerWin"
-waitForPort = 5000
-
-[[workflows.workflow]]
-name = "winapp"
+name = "YogaTrainer"
 author = "agent"
 
 [workflows.workflow.metadata]

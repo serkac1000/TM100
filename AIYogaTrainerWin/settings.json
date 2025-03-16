@@ -1,0 +1,9 @@
+{
+  "ModelUrl": "",
+  "AudioFeedback": true,
+  "HoldTime": 3,
+  "Pose1Name": "Mountain Pose",
+  "Pose2Name": "Warrior Pose",
+  "Pose3Name": "Tree Pose",
+  "Pose4Name": "Downward Dog"
+}

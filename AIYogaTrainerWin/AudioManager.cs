@@ -1,96 +1,123 @@
 using System;
-using System.IO;
-using NAudio.Wave;
+using System.Threading.Tasks;
 
 namespace AIYogaTrainerWin
 {
     /// <summary>
-    /// Manages audio playback for pose transitions
+    /// Manages audio feedback during yoga pose training
     /// </summary>
     public class AudioManager
     {
-        /// <summary>
-        /// Plays an audio file
-        /// </summary>
-        /// <param name="filePath">Path to the audio file</param>
-        public void PlayAudio(string filePath)
-        {
-            try
-            {
-                // Check if file exists
-                if (!File.Exists(filePath))
-                {
-                    Console.WriteLine($"Audio file not found: {filePath}");
-                    return;
-                }
+        private bool isEnabled;
 
-                // Play the audio file using NAudio
-                Task.Run(() =>
-                {
-                    try
-                    {
-                        using (var audioFile = new AudioFileReader(filePath))
-                        using (var outputDevice = new WaveOutEvent())
-                        {
-                            outputDevice.Init(audioFile);
-                            outputDevice.Play();
-                            
-                            // Wait until playback is finished
-                            while (outputDevice.PlaybackState == PlaybackState.Playing)
-                            {
-                                System.Threading.Thread.Sleep(100);
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"Error playing audio: {ex.Message}");
-                    }
-                });
-            }
-            catch (Exception ex)
+        public AudioManager(bool enabled = true)
+        {
+            isEnabled = enabled;
+        }
+
+        public void SetEnabled(bool enabled)
+        {
+            isEnabled = enabled;
+        }
+
+        public bool IsEnabled()
+        {
+            return isEnabled;
+        }
+
+        /// <summary>
+        /// Plays an audio cue when a pose is detected successfully
+        /// </summary>
+        public void PlayPoseDetectedSound()
+        {
+            if (!isEnabled) return;
+            
+            // In a real application, this would play an actual sound
+            Console.WriteLine("[Audio: Pose detected successfully]");
+        }
+
+        /// <summary>
+        /// Plays an audio cue when the user needs to adjust their pose
+        /// </summary>
+        public void PlayAdjustPoseSound()
+        {
+            if (!isEnabled) return;
+            
+            // In a real application, this would play an actual sound
+            Console.WriteLine("[Audio: Please adjust your pose]");
+        }
+
+        /// <summary>
+        /// Plays an audio cue to hold the current pose
+        /// </summary>
+        public void PlayHoldPoseSound()
+        {
+            if (!isEnabled) return;
+            
+            // In a real application, this would play an actual sound
+            Console.WriteLine("[Audio: Hold this pose]");
+        }
+
+        /// <summary>
+        /// Plays an audio instruction for the specified pose
+        /// </summary>
+        public void PlayPoseInstructions(string poseName)
+        {
+            if (!isEnabled) return;
+
+            // In a real application, this would play pose-specific instructions
+            Console.WriteLine($"[Audio: Instructions for {poseName}]");
+        }
+
+        /// <summary>
+        /// Plays a countdown timer
+        /// </summary>
+        public async Task PlayCountdown(int seconds)
+        {
+            if (!isEnabled) return;
+
+            for (int i = seconds; i > 0; i--)
             {
-                Console.WriteLine($"Error initializing audio playback: {ex.Message}");
+                Console.WriteLine($"[Audio: {i}]");
+                await Task.Delay(1000);
+            }
+            
+            Console.WriteLine("[Audio: Time's up!]");
+        }
+
+        /// <summary>
+        /// Provides audio feedback on pose accuracy
+        /// </summary>
+        public void PlayAccuracyFeedback(double accuracy)
+        {
+            if (!isEnabled) return;
+
+            if (accuracy > 90)
+            {
+                Console.WriteLine("[Audio: Excellent form!]");
+            }
+            else if (accuracy > 70)
+            {
+                Console.WriteLine("[Audio: Good form, minor adjustments needed]");
+            }
+            else if (accuracy > 50)
+            {
+                Console.WriteLine("[Audio: Try adjusting your position]");
+            }
+            else
+            {
+                Console.WriteLine("[Audio: Let's try a different pose]");
             }
         }
 
         /// <summary>
-        /// Plays the default audio for a pose
+        /// Plays end of session summary
         /// </summary>
-        /// <param name="poseNumber">The pose number (1-3)</param>
-        public void PlayPoseAudio(int poseNumber)
+        public void PlaySessionSummary(int posesCompleted, double averageAccuracy)
         {
-            // Load audio file path from settings or use default
-            string audioFile = $"pose{poseNumber}.wav";
+            if (!isEnabled) return;
             
-            // Try to get audio path from settings
-            try
-            {
-                string settingsJson = File.ReadAllText("settings.json");
-                var settings = System.Text.Json.JsonSerializer.Deserialize<Settings>(settingsJson);
-                
-                switch (poseNumber)
-                {
-                    case 1:
-                        if (!string.IsNullOrEmpty(settings.Pose1AudioPath))
-                            audioFile = settings.Pose1AudioPath;
-                        break;
-                    case 2:
-                        if (!string.IsNullOrEmpty(settings.Pose2AudioPath))
-                            audioFile = settings.Pose2AudioPath;
-                        break;
-                    case 3:
-                        if (!string.IsNullOrEmpty(settings.Pose3AudioPath))
-                            audioFile = settings.Pose3AudioPath;
-                        break;
-                }
-            }
-            catch
-            {
-                // Use default audio file if settings can't be loaded
-            }
-            
-            PlayAudio(audioFile);
+            Console.WriteLine($"[Audio: Session complete! You completed {posesCompleted} poses with an average accuracy of {averageAccuracy:F1}%]");
         }
     }
 }
