@@ -9,7 +9,7 @@ namespace AIYogaTrainerWin
     public class YogaAppSettings
     {
         /// <summary>
-        /// URL to the model API
+        /// URL to the Teachable Machine model API
         /// </summary>
         public string ModelUrl { get; set; } = "";
         
@@ -19,38 +19,86 @@ namespace AIYogaTrainerWin
         public bool AudioFeedback { get; set; } = true;
         
         /// <summary>
-        /// Hold time in seconds
+        /// Audio feedback threshold percentage
+        /// </summary>
+        public int AudioThreshold { get; set; } = 70;
+        
+        /// <summary>
+        /// Hold time in seconds (1-3)
         /// </summary>
         public int HoldTime { get; set; } = 3;
         
         /// <summary>
-        /// Selected Pose IDs for the training session
+        /// Detection threshold percentage (default 50%)
         /// </summary>
-        public List<string> SelectedPoseIds { get; set; } = new List<string>();
+        public int DetectionThreshold { get; set; } = 50;
         
         /// <summary>
-        /// Maximum difficulty level to include in training
+        /// Automatic pose progression when threshold is exceeded
         /// </summary>
-        public int MaxDifficultyLevel { get; set; } = 3;
+        public bool AutoPoseProgression { get; set; } = true;
         
         /// <summary>
-        /// Number of poses per training session
+        /// Names for poses (up to 6)
         /// </summary>
-        public int PosesPerSession { get; set; } = 5;
-        
-        // For backward compatibility - kept as settable properties
-        public string Pose1Name { get; set; } = "Mountain Pose";
-        public string Pose2Name { get; set; } = "Warrior Pose";
-        public string Pose3Name { get; set; } = "Tree Pose";
-        public string Pose4Name { get; set; } = "Downward Dog";
+        public string Pose1Name { get; set; } = "Pose 1";
+        public string Pose2Name { get; set; } = "Pose 2";
+        public string Pose3Name { get; set; } = "Pose 3";
+        public string Pose4Name { get; set; } = "Pose 4";
+        public string Pose5Name { get; set; } = "Pose 5";
+        public string Pose6Name { get; set; } = "Pose 6";
         
         /// <summary>
-        /// Constructor to initialize default settings
+        /// Whether each pose is active in the training session
         /// </summary>
-        public YogaAppSettings()
+        public bool Pose1Active { get; set; } = true;
+        public bool Pose2Active { get; set; } = true;
+        public bool Pose3Active { get; set; } = true;
+        public bool Pose4Active { get; set; } = false;
+        public bool Pose5Active { get; set; } = false;
+        public bool Pose6Active { get; set; } = false;
+        
+        /// <summary>
+        /// Image file paths for each pose
+        /// </summary>
+        public string Pose1ImagePath { get; set; } = "";
+        public string Pose2ImagePath { get; set; } = "";
+        public string Pose3ImagePath { get; set; } = "";
+        public string Pose4ImagePath { get; set; } = "";
+        public string Pose5ImagePath { get; set; } = "";
+        public string Pose6ImagePath { get; set; } = "";
+        
+        /// <summary>
+        /// Gets the image path for a specific pose number
+        /// </summary>
+        public string GetPoseImagePath(int poseNumber)
         {
-            // Set default selected poses
-            SelectedPoseIds = new List<string> { "mountain", "warrior1", "tree", "downdog", "triangle" };
+            return poseNumber switch
+            {
+                1 => Pose1ImagePath,
+                2 => Pose2ImagePath,
+                3 => Pose3ImagePath,
+                4 => Pose4ImagePath,
+                5 => Pose5ImagePath,
+                6 => Pose6ImagePath,
+                _ => ""
+            };
+        }
+        
+        /// <summary>
+        /// Sets the image path for a specific pose number
+        /// </summary>
+        public void SetPoseImagePath(int poseNumber, string path)
+        {
+            switch (poseNumber)
+            {
+                case 1: Pose1ImagePath = path; break;
+                case 2: Pose2ImagePath = path; break;
+                case 3: Pose3ImagePath = path; break;
+                case 4: Pose4ImagePath = path; break;
+                case 5: Pose5ImagePath = path; break;
+                case 6: Pose6ImagePath = path; break;
+            }
         }
     }
 }

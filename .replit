@@ -27,7 +27,7 @@ task = "packager.installForAll"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "cd AIYogaTrainerWin && dotnet run"
+args = "cd AIYogaTrainerWin && dotnet run --quick-setup"
 
 [deployment]
 run = ["sh", "-c", "dotnet run --project AIYogaTrainerWin"]

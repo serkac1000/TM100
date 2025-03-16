@@ -1,9 +1,26 @@
 {
-  "ModelUrl": "",
+  "ModelUrl": "https://teachablemachine.withgoogle.com/models/yoga-model",
   "AudioFeedback": true,
+  "AudioThreshold": 70,
   "HoldTime": 3,
+  "DetectionThreshold": 50,
+  "AutoPoseProgression": true,
   "Pose1Name": "Mountain Pose",
   "Pose2Name": "Warrior Pose",
   "Pose3Name": "Tree Pose",
-  "Pose4Name": "Downward Dog"
+  "Pose4Name": "Downward Dog",
+  "Pose5Name": "Pose 5",
+  "Pose6Name": "Pose 6",
+  "Pose1Active": true,
+  "Pose2Active": true,
+  "Pose3Active": true,
+  "Pose4Active": false,
+  "Pose5Active": false,
+  "Pose6Active": false,
+  "Pose1ImagePath": "",
+  "Pose2ImagePath": "",
+  "Pose3ImagePath": "",
+  "Pose4ImagePath": "",
+  "Pose5ImagePath": "",
+  "Pose6ImagePath": ""
 }
