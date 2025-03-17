@@ -12,3 +12,4 @@
 /home/runner/workspace/AIYogaTrainerWin/obj/Debug/net8.0/AIYogaTrainerWin.pdb
 /home/runner/workspace/AIYogaTrainerWin/obj/Debug/net8.0/AIYogaTrainerWin.genruntimeconfig.cache
 /home/runner/workspace/AIYogaTrainerWin/obj/Debug/net8.0/ref/AIYogaTrainerWin.dll
+/home/runner/workspace/AIYogaTrainerWin/obj/Debug/net8.0/AIYogaTrainerWin.sourcelink.json
