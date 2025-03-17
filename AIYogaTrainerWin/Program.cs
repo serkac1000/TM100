@@ -12,13 +12,22 @@ namespace AIYogaTrainerWin
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Starting AI Yoga Trainer...");
+            Console.WriteLine("Starting AI Pose Recognition System...");
             var app = new YogaTrainerApp();
             
-            // Check for quick setup argument
-            if (args.Length > 0 && args[0] == "--quick-setup")
+            // Check for command line arguments
+            if (args.Length > 0)
             {
-                app.QuickSetup();
+                if (args[0] == "--quick-setup")
+                {
+                    app.QuickSetup();
+                }
+                else if (args[0] == "--test-prototype")
+                {
+                    app.QuickSetup();
+                    app.StartTestPrototype();
+                    return; // Exit after test prototype
+                }
             }
             
             app.Run();
@@ -67,10 +76,10 @@ namespace AIYogaTrainerWin
                 Console.WriteLine("Setting model URL to default value");
             }
             
-            // Set up pose names if they are default values
-            if (settings.Pose1Name == "Pose 1") settings.Pose1Name = "Mountain Pose";
-            if (settings.Pose2Name == "Pose 2") settings.Pose2Name = "Warrior Pose";
-            if (settings.Pose3Name == "Pose 3") settings.Pose3Name = "Tree Pose";
+            // Set up pose names to be generic
+            settings.Pose1Name = "Pose 1";
+            settings.Pose2Name = "Pose 2";
+            settings.Pose3Name = "Pose 3";
             
             // Make sure poses 1-3 are active
             settings.Pose1Active = true;
@@ -81,6 +90,141 @@ namespace AIYogaTrainerWin
             SaveSettings();
             Console.WriteLine("Quick setup completed!");
         }
+        
+        /// <summary>
+        /// Starts the test prototype mode directly, bypassing the main menu
+        /// </summary>
+        public void StartTestPrototype()
+        {
+            bool exitPrototype = false;
+            
+            // For demonstration purposes, automatically select skeleton comparison
+            bool useAutoTest = Environment.GetCommandLineArgs().Contains("--test-prototype");
+            
+            while (!exitPrototype)
+            {
+                Console.Clear();
+                PrintHeader("AI POSE RECOGNITION - TEST PROTOTYPE");
+                Console.WriteLine("Starting skeleton visualization test prototype...");
+                Console.WriteLine();
+                
+                // Initialize necessary components
+                isRunning = true;
+                cancellationTokenSource = new CancellationTokenSource();
+                
+                Console.WriteLine($"🔗 Using model: {settings.ModelUrl}");
+                Console.WriteLine($"⚙️ Detection threshold: {settings.DetectionThreshold}%");
+                
+                // Show the enhanced visualization options
+                Console.WriteLine("\nSelect a test option:");
+                Console.WriteLine("1. 🔲 Skeleton Comparison Visualization Test");
+                Console.WriteLine("2. 🧪 Quick Pose Testing Mode");
+                Console.WriteLine("3. 🔍 Advanced Interactive Testing");
+                Console.WriteLine("4. 🔙 Exit Test Prototype");
+                Console.WriteLine();
+                Console.Write("Select option (1-4): ");
+                
+                char optionChar;
+                
+                if (useAutoTest)
+                {
+                    // Automatically select option 1 for the workflow environment
+                    optionChar = '1';
+                    Console.WriteLine(optionChar);
+                    // Set to false so if user returns to menu they can select other options
+                    useAutoTest = false;
+                }
+                else
+                {
+                    try
+                    {
+ var key = SafeReadKeyWithResult();
+                        optionChar = key.KeyChar;
+                        Console.WriteLine(optionChar);
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        // If console input is redirected, default to option 1
+                        optionChar = '1';
+                        Console.WriteLine(optionChar);
+                    }
+                }
+                
+                switch (optionChar)
+                {
+                    case '1':
+                        // Test skeleton comparison directly
+                        SimulateSkeletonComparison(1); // Start with pose 1
+                        break;
+                        
+                    case '2':
+                        // Run quick pose testing mode
+                        QuickPoseTestingMode();
+                        break;
+                        
+                    case '3':
+                        // Run interactive training mode
+                        InteractiveTrainingMode();
+                        break;
+                        
+                    case '4':
+                        // Exit the prototype mode
+                        exitPrototype = true;
+                        break;
+                        
+                    default:
+                        Console.WriteLine("Invalid option. Press any key to continue...");
+                        SafeReadKey();
+                        break;
+                }
+                
+                if (!exitPrototype)
+                {
+                    Console.WriteLine("\nTest prototype completed. Press any key to return to test menu...");
+                    SafeReadKey();
+                }
+            }
+            
+            isRunning = false;
+            Console.WriteLine("\nExiting test prototype. Press any key to exit...");
+            SafeReadKey();
+        }
+        
+        /// <summary>
+        /// Safely reads a key from the console, handling the case when input is redirected
+        /// </summary>
+        private void SafeReadKey()
+        {
+            try
+            {
+                Console.ReadKey(true);
+            }
+            catch (InvalidOperationException)
+            {
+                // If console input is redirected, just pause briefly
+                Thread.Sleep(1000);
+            }
+        }
+        
+        /// <summary>
+        /// Safely reads a key from the console and returns the result, 
+        /// handling the case when input is redirected
+        /// </summary>
+        /// <returns>ConsoleKeyInfo or default with KeyChar '1' if input is redirected</returns>
+        private ConsoleKeyInfo SafeReadKeyWithResult()
+        {
+            try
+            {
+                return Console.ReadKey(true);
+            }
+            catch (InvalidOperationException)
+            {
+                // If console input is redirected, use a default value and pause briefly
+                Thread.Sleep(1000);
+                // Return a default ConsoleKeyInfo with KeyChar '1' as a reasonable default
+                return new ConsoleKeyInfo('1', ConsoleKey.D1, false, false, false);
+            }
+        }
 
         public void Run()
         {
@@ -89,7 +233,7 @@ namespace AIYogaTrainerWin
             while (!exitApp)
             {
                 Console.Clear();
-                PrintHeader("AI YOGA TRAINER");
+                PrintHeader("AI POSE RECOGNITION");
                 
                 // Show quick setup message if needed
                 if (string.IsNullOrEmpty(settings.ModelUrl))
@@ -108,14 +252,14 @@ namespace AIYogaTrainerWin
                 Console.WriteLine();
                 Console.Write("Select an option (1-4): ");
 
-                var key = Console.ReadKey(true);
+                var key = SafeReadKeyWithResult();
                 
                 // Quick setup shortcut
                 if (key.KeyChar == 'q' || key.KeyChar == 'Q')
                 {
                     QuickSetup();
                     Console.WriteLine("\nQuick setup completed. Press any key to continue...");
-                    Console.ReadKey(true);
+                    SafeReadKey();
                     continue;
                 }
                 
@@ -135,7 +279,7 @@ namespace AIYogaTrainerWin
                         break;
                     default:
                         Console.WriteLine("Invalid option. Press any key to continue...");
-                        Console.ReadKey(true);
+                        SafeReadKey();
                         break;
                 }
             }
@@ -244,7 +388,7 @@ namespace AIYogaTrainerWin
             {
                 Console.WriteLine("You need to set up a model URL in settings first.");
                 Console.WriteLine("\nPress any key to continue...");
-                Console.ReadKey(true);
+                SafeReadKey();
                 return;
             }
 
@@ -279,7 +423,7 @@ namespace AIYogaTrainerWin
             
             isRunning = false;
             Console.WriteLine("\nSession ended. Press any key to continue...");
-            Console.ReadKey(true);
+            SafeReadKey();
         }
         
         private void InteractiveTrainingMode()
@@ -304,7 +448,7 @@ namespace AIYogaTrainerWin
             Console.WriteLine();
             Console.Write("Select mode (1-2): ");
             
-            var modeKey = Console.ReadKey(true);
+            var modeKey = SafeReadKeyWithResult();
             Console.WriteLine(modeKey.KeyChar);
             
             // Quick demo mode with minimal steps
@@ -319,7 +463,7 @@ namespace AIYogaTrainerWin
             Console.WriteLine("\n📊 INTERACTIVE TRAINING MODE 📊");
             Console.WriteLine("This prototype allows you to test the pose detection system");
             Console.WriteLine("Press any key to continue...");
-            Console.ReadKey(true);
+            SafeReadKey();
             
             while (!exitTraining && !cancellationTokenSource.IsCancellationRequested)
             {
@@ -345,7 +489,7 @@ namespace AIYogaTrainerWin
                 Console.WriteLine();
                 Console.Write("Select option (1-7): ");
                 
-                var key = Console.ReadKey(true);
+                var key = SafeReadKeyWithResult();
                 Console.WriteLine(key.KeyChar);
                 
                 Random random = new Random();
@@ -428,7 +572,7 @@ namespace AIYogaTrainerWin
                 if (!exitTraining && key.KeyChar != '7')
                 {
                     Console.WriteLine("\nPress any key to continue...");
-                    Console.ReadKey(true);
+                    SafeReadKey();
                 }
             }
         }
@@ -442,7 +586,7 @@ namespace AIYogaTrainerWin
             PrintHeader("QUICK POSE TESTING");
             Console.WriteLine("This mode will test all active poses in sequence with a single keystroke");
             Console.WriteLine("Press any key to start...");
-            Console.ReadKey(true);
+            SafeReadKey();
             
             // Test each active pose
             for (int poseNumber = 1; poseNumber <= 3; poseNumber++)
@@ -540,7 +684,7 @@ namespace AIYogaTrainerWin
                     }
                     
                     Console.WriteLine("\n\nPress any key to continue to next pose...");
-                    Console.ReadKey(true);
+                    SafeReadKey();
                 }
             }
             
@@ -554,7 +698,7 @@ namespace AIYogaTrainerWin
             Console.WriteLine();
             Console.Write("Select pose (1-3): ");
             
-            var key = Console.ReadKey(true);
+ var key = SafeReadKeyWithResult();
             Console.WriteLine(key.KeyChar);
             
             int selectedPose;
@@ -832,9 +976,17 @@ namespace AIYogaTrainerWin
                 Console.WriteLine();
                 Console.Write("Select an option (1-8): ");
                 
-                var key = Console.ReadKey(true);
+                char keyChar;
+                try {
+ var key = SafeReadKeyWithResult();
+                    keyChar = key.KeyChar;
+                }
+                catch (InvalidOperationException) {
+                    // Default to saving settings if console input is redirected
+                    keyChar = '8';
+                }
                 
-                switch (key.KeyChar)
+                switch (keyChar)
                 {
                     case '1':
                         EditModelUrl();
@@ -863,7 +1015,7 @@ namespace AIYogaTrainerWin
                         break;
                     default:
                         Console.WriteLine("Invalid option. Press any key to continue...");
-                        Console.ReadKey(true);
+                        SafeReadKey();
                         break;
                 }
             }
@@ -881,7 +1033,7 @@ namespace AIYogaTrainerWin
             {
                 Console.WriteLine("Invalid input. Threshold must be between 1 and 100.");
                 Console.WriteLine("Press any key to continue...");
-                Console.ReadKey(true);
+                SafeReadKey();
             }
         }
 
@@ -907,7 +1059,7 @@ namespace AIYogaTrainerWin
             {
                 Console.WriteLine("Invalid input. Hold time must be between 1 and 3.");
                 Console.WriteLine("Press any key to continue...");
-                Console.ReadKey(true);
+                SafeReadKey();
             }
         }
         
@@ -923,7 +1075,7 @@ namespace AIYogaTrainerWin
             {
                 Console.WriteLine("Invalid input. Threshold must be between 1 and 100.");
                 Console.WriteLine("Press any key to continue...");
-                Console.ReadKey(true);
+                SafeReadKey();
             }
         }
         
@@ -951,21 +1103,29 @@ namespace AIYogaTrainerWin
                 Console.WriteLine();
                 Console.Write("Select a pose to edit (1-7): ");
                 
-                var key = Console.ReadKey(true);
+                char keyChar;
+                try {
+ var key = SafeReadKeyWithResult();
+                    keyChar = key.KeyChar;
+                }
+                catch (InvalidOperationException) {
+                    // Default to return if console input is redirected
+                    keyChar = '7';
+                }
                 
-                if (key.KeyChar >= '1' && key.KeyChar <= '6')
+                if (keyChar >= '1' && keyChar <= '6')
                 {
-                    int poseNumber = key.KeyChar - '0';
+                    int poseNumber = keyChar - '0';
                     EditPose(poseNumber);
                 }
-                else if (key.KeyChar == '7')
+                else if (keyChar == '7')
                 {
                     exitPoseMenu = true;
                 }
                 else
                 {
                     Console.WriteLine("Invalid option. Press any key to continue...");
-                    Console.ReadKey(true);
+                    SafeReadKey();
                 }
             }
         }
@@ -991,9 +1151,17 @@ namespace AIYogaTrainerWin
             Console.WriteLine();
             Console.Write("Select an option (1-4): ");
             
-            var key = Console.ReadKey(true);
+            char keyChar;
+            try {
+ var key = SafeReadKeyWithResult();
+                keyChar = key.KeyChar;
+            }
+            catch (InvalidOperationException) {
+                // Default to return if console input is redirected
+                keyChar = '4';
+            }
             
-            switch (key.KeyChar)
+            switch (keyChar)
             {
                 case '1':
                     EditPoseName(poseNumber);
@@ -1009,7 +1177,7 @@ namespace AIYogaTrainerWin
                     break;
                 default:
                     Console.WriteLine("Invalid option. Press any key to continue...");
-                    Console.ReadKey(true);
+                    SafeReadKey();
                     break;
             }
         }
@@ -1029,7 +1197,7 @@ namespace AIYogaTrainerWin
                 settings.SetPoseImagePath(poseNumber, input);
                 Console.WriteLine($"\nImage path set to: {input}");
                 Console.WriteLine("Press any key to continue...");
-                Console.ReadKey(true);
+                SafeReadKey();
             }
         }
         
@@ -1039,7 +1207,7 @@ namespace AIYogaTrainerWin
         private void SimulateSkeletonComparison(int poseNumber)
         {
             Console.Clear();
-            PrintHeader("ENHANCED SKELETON COMPARISON");
+            PrintHeader("POSE RECOGNITION SYSTEM - SKELETON COMPARISON");
             
             string poseName = GetPoseName(poseNumber);
             Console.ForegroundColor = ConsoleColor.Cyan;
@@ -1059,13 +1227,22 @@ namespace AIYogaTrainerWin
             Console.WriteLine("5. Custom accuracy");
             Console.Write("\nSelect option (1-5): ");
             
-            var key = Console.ReadKey(true);
-            Console.WriteLine(key.KeyChar);
+            char keyChar;
+            try {
+ var key = SafeReadKeyWithResult();
+                keyChar = key.KeyChar;
+                Console.WriteLine(keyChar);
+            }
+            catch (InvalidOperationException) {
+                // Default to medium accuracy if console input is redirected
+                keyChar = '2';
+                Console.WriteLine(keyChar);
+            }
             
             // Set accuracy based on selection
             Random random = new Random();
             int accuracy;
-            switch (key.KeyChar)
+            switch (keyChar)
             {
                 case '1':
                     accuracy = random.Next(30, 51);
@@ -1192,7 +1369,7 @@ namespace AIYogaTrainerWin
             }
             
             Console.WriteLine("\nPress any key to return to menu...");
-            Console.ReadKey(true);
+            SafeReadKey();
         }
         
         /// <summary>
@@ -1226,9 +1403,27 @@ namespace AIYogaTrainerWin
         {
             PoseKeypoints poseKeypoints = new PoseKeypoints();
             
-            foreach (var keypoint in skeleton.Keypoints)
+            // Initialize with default positions to avoid null reference issues
+            poseKeypoints.Head = (0, 0);
+            poseKeypoints.Neck = (0, 0);
+            poseKeypoints.LeftShoulder = (0, 0);
+            poseKeypoints.RightShoulder = (0, 0);
+            poseKeypoints.LeftElbow = (0, 0);
+            poseKeypoints.RightElbow = (0, 0);
+            poseKeypoints.LeftWrist = (0, 0);
+            poseKeypoints.RightWrist = (0, 0);
+            poseKeypoints.LeftHip = (0, 0);
+            poseKeypoints.RightHip = (0, 0);
+            poseKeypoints.LeftKnee = (0, 0);
+            poseKeypoints.RightKnee = (0, 0);
+            poseKeypoints.LeftAnkle = (0, 0);
+            poseKeypoints.RightAnkle = (0, 0);
+            
+            // Map from Skeleton's keypoints to PoseKeypoints
+            foreach (var entry in skeleton.Keypoints)
             {
-                string name = keypoint.Name.ToLower();
+                string name = entry.Key.ToLower();
+                var keypoint = entry.Value;
                 double x = keypoint.X;
                 double y = keypoint.Y;
                 
@@ -1318,7 +1513,7 @@ namespace AIYogaTrainerWin
             
             // Print header
             Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.WriteLine("ENHANCED SKELETON VISUALIZATION - POSE ANALYSIS");
+            Console.WriteLine("POSE RECOGNITION SYSTEM - SKELETON ANALYSIS");
             Console.ResetColor();
             Console.WriteLine(new string('-', 90));
             
@@ -1868,7 +2063,7 @@ namespace AIYogaTrainerWin
             }
             
             Console.WriteLine("\nPress any key to return to main menu...");
-            Console.ReadKey(true);
+            SafeReadKey();
         }
 
         private void PrintHeader(string title)

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Runtime.InteropServices;
 
 namespace AIYogaTrainerWin
 {
@@ -39,18 +40,15 @@ namespace AIYogaTrainerWin
                 
                 if (shouldProvide)
                 {
-                    // Success feedback
-                    Console.Beep(1000, 200); // 1000Hz for 200ms
-                    Task.Delay(100).Wait();
-                    Console.Beep(1200, 300); // 1200Hz for 300ms
+                    // Temporarily disabled audio beep for cross-platform compatibility
+                    // Instead, just display audio feedback message
                     
                     // Simulate voice feedback
                     Console.WriteLine($"[AUDIO] Great job! {poseName} pose detected.");
                 }
                 else if (accuracy > 0)
                 {
-                    // Improvement needed feedback
-                    Console.Beep(800, 200); // 800Hz for 200ms
+                    // Temporarily disabled audio beep for cross-platform compatibility
                     
                     // Simulate voice feedback
                     Console.WriteLine($"[AUDIO] Getting closer to {poseName}. Keep adjusting your position.");
@@ -68,10 +66,7 @@ namespace AIYogaTrainerWin
                 return; // Audio feedback is disabled
             }
             
-            // Transition sound
-            Console.Beep(600, 150);
-            Console.Beep(800, 150);
-            Console.Beep(1000, 150);
+            // Temporarily disabled audio beep for cross-platform compatibility
             
             // Simulate voice feedback
             Console.WriteLine($"[AUDIO] Great job with {fromPose}! Moving to {toPose}.");
@@ -87,10 +82,7 @@ namespace AIYogaTrainerWin
                 return; // Audio feedback is disabled
             }
             
-            // Startup sound
-            Console.Beep(500, 200);
-            Console.Beep(700, 200);
-            Console.Beep(900, 200);
+            // Temporarily disabled audio beep for cross-platform compatibility
             
             // Simulate voice feedback
             Console.WriteLine("[AUDIO] Training session started. Get ready for your first pose!");
@@ -106,12 +98,7 @@ namespace AIYogaTrainerWin
                 return; // Audio feedback is disabled
             }
             
-            // Completion sound
-            Console.Beep(900, 200);
-            Console.Beep(700, 200);
-            Console.Beep(500, 200);
-            Task.Delay(300).Wait();
-            Console.Beep(1200, 500);
+            // Temporarily disabled audio beep for cross-platform compatibility
             
             // Simulate voice feedback
             Console.WriteLine("[AUDIO] Training session complete! Great job!");

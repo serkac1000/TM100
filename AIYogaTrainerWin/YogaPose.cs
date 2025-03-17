@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace AIYogaTrainerWin
 {
     /// <summary>
-    /// Represents a yoga pose with detection logic
+    /// Represents a pose model with detection logic
     /// </summary>
     public class PoseModel
     {
@@ -34,7 +34,7 @@ namespace AIYogaTrainerWin
         public Dictionary<string, List<string>> KeypointAdjustments { get; set; }
         
         /// <summary>
-        /// Creates a new yoga pose
+        /// Creates a new pose model
         /// </summary>
         public PoseModel(string name, bool active = true)
         {
@@ -153,7 +153,7 @@ namespace AIYogaTrainerWin
                     "Breathe deeply and steadily"
                 };
                 
-                // Add keypoint-specific adjustments for Mountain Pose
+                // Add keypoint-specific adjustments for Pose 1
                 pose1.KeypointAdjustments = new Dictionary<string, List<string>>
                 {
                     { "leftShoulder", new List<string> { 
@@ -202,7 +202,7 @@ namespace AIYogaTrainerWin
                     "Keep your stance wide and stable"
                 };
                 
-                // Add keypoint-specific adjustments for Warrior Pose
+                // Add keypoint-specific adjustments for Pose 2
                 pose2.KeypointAdjustments = new Dictionary<string, List<string>>
                 {
                     { "leftShoulder", new List<string> { 
@@ -259,7 +259,7 @@ namespace AIYogaTrainerWin
                     "Bring your hands to heart center if needed for balance"
                 };
                 
-                // Add keypoint-specific adjustments for Tree Pose
+                // Add keypoint-specific adjustments for Pose 3
                 pose3.KeypointAdjustments = new Dictionary<string, List<string>>
                 {
                     { "leftShoulder", new List<string> { 
@@ -316,7 +316,7 @@ namespace AIYogaTrainerWin
                     "Engage your core to support your spine"
                 };
                 
-                // Add keypoint-specific adjustments for Downward Dog
+                // Add keypoint-specific adjustments for Pose 4
                 pose4.KeypointAdjustments = new Dictionary<string, List<string>>
                 {
                     { "leftShoulder", new List<string> { 

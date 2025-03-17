@@ -29,7 +29,7 @@ namespace AIYogaTrainerWin
         public int HoldTime { get; set; } = 3;
         
         /// <summary>
-        /// Detection threshold percentage (default 50%)
+        /// Detection threshold percentage (default 50% - this is the minimum accuracy needed for a pose to be considered matched)
         /// </summary>
         public int DetectionThreshold { get; set; } = 50;
         

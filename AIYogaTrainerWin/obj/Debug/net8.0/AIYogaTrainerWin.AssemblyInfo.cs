@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("AIYogaTrainerWin")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f0f4c86bfcf1bf28e174041899873732101e1a21")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b4a10d82b2b732cf8fa114c62e9c215e09d73ed5")]
 [assembly: System.Reflection.AssemblyProductAttribute("AIYogaTrainerWin")]
 [assembly: System.Reflection.AssemblyTitleAttribute("AIYogaTrainerWin")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
