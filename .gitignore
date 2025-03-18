@@ -1,6 +1,25 @@
+# Dependencies
 node_modules
 dist
 .DS_Store
 server/public
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Build files
+*.log
 vite.config.ts.*
 *.tar.gz
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Database
+*.sqlite
+*.db
