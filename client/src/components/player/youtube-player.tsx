@@ -1,3 +1,4 @@
+/// <reference types="youtube" />
 import { useEffect, useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
@@ -33,17 +34,21 @@ export function YoutubePlayer({ videoId }: YoutubePlayerProps) {
           width: "640",
           videoId,
           playerVars: {
-            autoplay: 1, // Enable autoplay
+            autoplay: 1,
             controls: 1,
             modestbranding: 1,
           },
           events: {
             onReady: () => {
-              setIsLoading(false);
+              if (mounted) {
+                setIsLoading(false);
+              }
             },
             onError: () => {
-              setError("Failed to load video");
-              setIsLoading(false);
+              if (mounted) {
+                setError("Failed to load video");
+                setIsLoading(false);
+              }
             },
           },
         });
