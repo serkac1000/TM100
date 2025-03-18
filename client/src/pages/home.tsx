@@ -15,7 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 export default function Home() {
   const [videoId, setVideoId] = useState<string>();
   const { toast } = useToast();
-  
+
   const form = useForm({
     resolver: zodResolver(youtubeUrlSchema),
     defaultValues: {
@@ -24,12 +24,15 @@ export default function Home() {
   });
 
   const urlMutation = useMutation({
-    mutationFn: async (url: string) => {
-      const res = await apiRequest("POST", "/api/videos", { youtubeUrl: url });
-      return res.json();
+    mutationFn: async (youtubeUrl: string) => {
+      const res = await apiRequest("POST", "/api/videos", { youtubeUrl });
+      const data = await res.json();
+      return data;
     },
     onSuccess: (data) => {
+      console.log("Video data:", data);
       setVideoId(data.videoId);
+      form.reset();
     },
     onError: (error) => {
       toast({
@@ -41,6 +44,7 @@ export default function Home() {
   });
 
   const onSubmit = (data: { youtubeUrl: string }) => {
+    console.log("Submitting URL:", data.youtubeUrl);
     urlMutation.mutate(data.youtubeUrl);
   };
 

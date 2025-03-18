@@ -16,6 +16,7 @@ export function YoutubePlayer({ videoId }: YoutubePlayerProps) {
 
   useEffect(() => {
     let mounted = true;
+    console.log("Initializing player with videoId:", videoId);
 
     const initPlayer = async () => {
       try {
@@ -29,9 +30,8 @@ export function YoutubePlayer({ videoId }: YoutubePlayerProps) {
           player.current.destroy();
         }
 
+        console.log("Creating new YT.Player instance");
         player.current = new window.YT.Player(playerRef.current, {
-          height: "390",
-          width: "640",
           videoId,
           playerVars: {
             autoplay: 1,
@@ -39,20 +39,27 @@ export function YoutubePlayer({ videoId }: YoutubePlayerProps) {
             modestbranding: 1,
           },
           events: {
-            onReady: () => {
+            onReady: (event) => {
+              console.log("Player ready");
               if (mounted) {
                 setIsLoading(false);
+                event.target.playVideo();
               }
             },
-            onError: () => {
+            onError: (event) => {
+              console.error("Player error:", event.data);
               if (mounted) {
                 setError("Failed to load video");
                 setIsLoading(false);
               }
             },
+            onStateChange: (event) => {
+              console.log("Player state changed:", event.data);
+            },
           },
         });
       } catch (err) {
+        console.error("Player initialization error:", err);
         if (mounted) {
           setError("Failed to initialize YouTube player");
           setIsLoading(false);
