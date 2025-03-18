@@ -1,0 +1,15 @@
+/home/runner/workspace/AIYogaTrainerWin/obj/Debug/net8.0/AIYogaTrainerWin.GeneratedMSBuildEditorConfig.editorconfig
+/home/runner/workspace/AIYogaTrainerWin/obj/Debug/net8.0/AIYogaTrainerWin.AssemblyInfoInputs.cache
+/home/runner/workspace/AIYogaTrainerWin/obj/Debug/net8.0/AIYogaTrainerWin.AssemblyInfo.cs
+/home/runner/workspace/AIYogaTrainerWin/obj/Debug/net8.0/AIYogaTrainerWin.csproj.CoreCompileInputs.cache
+/home/runner/workspace/AIYogaTrainerWin/bin/Debug/net8.0/AIYogaTrainerWin
+/home/runner/workspace/AIYogaTrainerWin/bin/Debug/net8.0/AIYogaTrainerWin.deps.json
+/home/runner/workspace/AIYogaTrainerWin/bin/Debug/net8.0/AIYogaTrainerWin.runtimeconfig.json
+/home/runner/workspace/AIYogaTrainerWin/bin/Debug/net8.0/AIYogaTrainerWin.dll
+/home/runner/workspace/AIYogaTrainerWin/bin/Debug/net8.0/AIYogaTrainerWin.pdb
+/home/runner/workspace/AIYogaTrainerWin/obj/Debug/net8.0/AIYogaTrainerWin.dll
+/home/runner/workspace/AIYogaTrainerWin/obj/Debug/net8.0/refint/AIYogaTrainerWin.dll
+/home/runner/workspace/AIYogaTrainerWin/obj/Debug/net8.0/AIYogaTrainerWin.pdb
+/home/runner/workspace/AIYogaTrainerWin/obj/Debug/net8.0/AIYogaTrainerWin.genruntimeconfig.cache
+/home/runner/workspace/AIYogaTrainerWin/obj/Debug/net8.0/ref/AIYogaTrainerWin.dll
+/home/runner/workspace/AIYogaTrainerWin/obj/Debug/net8.0/AIYogaTrainerWin.sourcelink.json
