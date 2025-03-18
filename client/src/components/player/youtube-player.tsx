@@ -37,24 +37,46 @@ export function YoutubePlayer({ videoId }: YoutubePlayerProps) {
             autoplay: 1,
             controls: 1,
             modestbranding: 1,
+            mute: 1, // Start muted to allow autoplay
           },
           events: {
             onReady: (event) => {
               console.log("Player ready");
               if (mounted) {
                 setIsLoading(false);
+                event.target.mute(); // Ensure muted state
                 event.target.playVideo();
               }
             },
             onError: (event) => {
               console.error("Player error:", event.data);
+              let errorMessage = "Failed to load video";
+              switch (event.data) {
+                case 2:
+                  errorMessage = "Invalid video ID";
+                  break;
+                case 5:
+                  errorMessage = "HTML5 player error";
+                  break;
+                case 100:
+                  errorMessage = "Video not found";
+                  break;
+                case 101:
+                case 150:
+                  errorMessage = "Video playback not allowed";
+                  break;
+              }
               if (mounted) {
-                setError("Failed to load video");
+                setError(errorMessage);
                 setIsLoading(false);
               }
             },
             onStateChange: (event) => {
               console.log("Player state changed:", event.data);
+              // -1: unstarted, 0: ended, 1: playing, 2: paused, 3: buffering, 5: video cued
+              if (event.data === YT.PlayerState.PLAYING) {
+                console.log("Video started playing");
+              }
             },
           },
         });
