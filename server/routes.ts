@@ -8,8 +8,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Video management endpoints
   app.post("/api/videos", async (req, res) => {
     try {
-      const { youtubeUrl } = await youtubeUrlSchema.parseAsync(req.body);
-      
+      const validatedData = await youtubeUrlSchema.parseAsync(req.body.youtubeUrl);
+      const youtubeUrl = validatedData;
+
       // Extract video ID from URL
       let videoId = "";
       try {
@@ -31,6 +32,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         youtubeUrl,
         videoId,
         autoTranslate: false,
+        translatedText: null,
       });
 
       res.json(video);
@@ -47,11 +49,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/translate", async (req, res) => {
     try {
       const { text } = await z.object({ text: z.string() }).parseAsync(req.body);
-      
+
       // Here we would integrate with a translation API
       // For demo purposes, prepending "RU: " to simulate translation
       const translated = `RU: ${text}`;
-      
+
       res.json({ translated });
     } catch (e) {
       res.status(400).json({ message: "Invalid input" });
